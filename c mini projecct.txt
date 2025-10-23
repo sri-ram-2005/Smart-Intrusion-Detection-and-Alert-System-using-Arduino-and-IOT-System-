@@ -1,0 +1,39 @@
+ 
+#define echo 2    // Pin connected to the ECHO pin of the ultrasonic sensor 
+#define trig 3    // Pin connected to the TRIG pin of the ultrasonic sensor 
+#define outA 8    // Red LED 
+#define outC 8    // Green LED   
+#define outB 9    // Buzzer   
+ 
+float duration;      // Time taken by the pulse to return back float distance;      // One-way distance travelled by the pulse const int intruderDistance = 100;  // Minimum distance (in cm) to detect an "intruder" 
+ 
+void setup() { 
+  pinMode(trig, OUTPUT);   // Set TRIG pin as an OUTPUT   pinMode(echo, INPUT);    // Set ECHO pin as an INPUT   pinMode(outA, OUTPUT);  // Set Red LED pin as an OUTPUT 
+  digitalWrite(outA, LOW);  // Initially turn OFF Red LED   pinMode(outB, OUTPUT);  // Set Buzzer pin as an OUTPUT   
+  digitalWrite(outB, LOW);  // Initially turn OFF Buzzer   
+  pinMode(outC, OUTPUT);  // Set Green LED pin as an OUTPUT   
+  digitalWrite(outC, LOW);  // Initially turn OFF Green LED   
+  Serial.begin(9600);     // Initialize serial communication for debugging 
+} 
+ 
+void loop() { 
+  timeMeasurement();  // Call function to measure the time of flight   distance = (duration * 0.0343) / 2;  // Calculate distance (sound speed is approx. 0.0343 cm/us) 
+  Serial.println(distance);       // Print the distance to the serial monitor 
+  alarmCondition();         // Call function to check for intrusion and activate alarm 
+} 
+ 
+void timeMeasurement() { 
+  // Function to measure the time taken by the ultrasonic pulse to return 
+  digitalWrite(trig, LOW);   delayMicroseconds(2); 
+  digitalWrite(trig, HIGH);  // Send a 10us HIGH pulse to trigger the sensor   delayMicroseconds(10);   digitalWrite(trig, LOW); 
+  duration = pulseIn(echo, HIGH);  // Measure the duration of the HIGH pulse on the ECHO pin 
+} 
+ 
+void alarmCondition() { 
+  // Function to execute output commands based on the measured distance   if (distance <= intruderDistance) {     // Intruder detected! 
+    digitalWrite(outA, HIGH);   // Turn ON Red LED     digitalWrite(outC, LOW);    // Turn OFF Green LED       analogWrite(outB, 200);  // Turn ON Buzzer (with a tone - value 200)   
+  } else { 
+    // No intruder 
+    digitalWrite(outA, LOW);    // Turn OFF Red LED     digitalWrite(outC, HIGH);   // Turn ON Green LED       analogWrite(outB, 0);    // Turn OFF Buzzer   
+  } 
+} 
